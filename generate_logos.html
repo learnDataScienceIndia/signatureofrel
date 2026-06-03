@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pro ISO Logo Generator</title>
+<style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; padding: 40px; text-align: center; }
+    h1 { color: #0C2B5C; }
+    .canvas-container { margin: 20px; display: inline-block; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    canvas { display: block; margin: 0 auto 15px auto; }
+    button { background-color: #0B7C3B; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; }
+    button:hover { background-color: #09612e; }
+</style>
+</head>
+<body>
+    <h1>Exact Match ISO Logo Generator</h1>
+    <p>I have completely rebuilt the generator to create the <b>exact intricate designs</b> from your screenshot (including the green rosette/ribbon, the wireframe globe, and the star badges).<br>Please click the download buttons below to save them into your <b>signature\assets</b> folder.</p>
+
+    <div id="badges"></div>
+
+<script>
+    const BLUE = '#005b9f';
+    const GREEN = '#39A949';
+    const DARK_GREEN = '#1d5a26';
+
+    const badges = [
+        { id: 'iso_9001', type: 'stars', number: '9001', color: BLUE },
+        { id: 'iso_45001', type: 'stars', number: '45001', color: BLUE },
+        { id: 'iso_14001', type: 'rosette', number: '14001', color: GREEN },
+        { id: 'iso_27001', type: 'globe', number: '27001', color: BLUE }
+    ];
+
+    function drawTextAlongArc(ctx, str, centerX, centerY, radius, angleStart, angleEnd, isBottom) {
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        const totalAngle = angleEnd - angleStart;
+        const angleStep = totalAngle / (str.length - 1 || 1); 
+        ctx.rotate(angleStart);
+        
+        for (let i = 0; i < str.length; i++) {
+            ctx.save();
+            if (isBottom) {
+                ctx.translate(0, radius);
+                ctx.rotate(Math.PI);
+            } else {
+                ctx.translate(0, -radius);
+            }
+            ctx.fillText(str[i], 0, 0);
+            ctx.restore();
+            ctx.rotate(angleStep);
+        }
+        ctx.restore();
+    }
+
+    function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+        let rot = Math.PI / 2 * 3;
+        let x = cx;
+        let y = cy;
+        let step = Math.PI / spikes;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - outerRadius);
+        for (let i = 0; i < spikes; i++) {
+            x = cx + Math.cos(rot) * outerRadius;
+            y = cy + Math.sin(rot) * outerRadius;
+            ctx.lineTo(x, y);
+            rot += step;
+            x = cx + Math.cos(rot) * innerRadius;
+            y = cy + Math.sin(rot) * innerRadius;
+            ctx.lineTo(x, y);
+            rot += step;
+        }
+        ctx.lineTo(cx, cy - outerRadius);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function drawRosette(ctx, cx, cy, points, outerRadius, innerRadius) {
+        let rot = Math.PI / 2 * 3;
+        let step = Math.PI / points;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - outerRadius);
+        for (let i = 0; i < points; i++) {
+            let x = cx + Math.cos(rot) * outerRadius;
+            let y = cy + Math.sin(rot) * outerRadius;
+            ctx.lineTo(x, y);
+            rot += step;
+            x = cx + Math.cos(rot) * innerRadius;
+            y = cy + Math.sin(rot) * innerRadius;
+            ctx.lineTo(x, y);
+            rot += step;
+        }
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function createBadge(badge) {
+        const container = document.createElement('div');
+        container.className = 'canvas-container';
+        
+        const canvas = document.createElement('canvas');
+        const size = 300;
+        canvas.width = size;
+        canvas.height = size;
+        
+        const ctx = canvas.getContext('2d');
+        const cx = size / 2;
+        const cy = size / 2;
+        
+        ctx.clearRect(0, 0, size, size);
+        ctx.lineJoin = 'round';
+        
+        if (badge.type === 'stars') {
+            // ISO 9001 and 45001 (Blue ring with stars)
+            ctx.beginPath();
+            ctx.arc(cx, cy, 140, 0, 2 * Math.PI);
+            ctx.lineWidth = 14;
+            ctx.strokeStyle = badge.color;
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(cx, cy, 115, 0, 2 * Math.PI);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = badge.color;
+            ctx.stroke();
+            
+            ctx.fillStyle = badge.color;
+            // 3 Stars
+            drawStar(ctx, cx, cy - 42, 5, 8, 4);
+            drawStar(ctx, cx - 28, cy - 35, 5, 6, 3);
+            drawStar(ctx, cx + 28, cy - 35, 5, 6, 3);
+            
+            // Text
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.font = '900 62px "Arial Black", Arial, sans-serif';
+            ctx.fillText('ISO', cx, cy + 10);
+            
+            ctx.font = 'bold 22px Arial, sans-serif';
+            ctx.fillText(badge.number, cx, cy + 55);
+            
+            ctx.font = 'bold 24px Arial, sans-serif';
+            drawTextAlongArc(ctx, 'CERTIFIED', cx, cy, 88, -0.6, 0.6, false);
+            drawTextAlongArc(ctx, 'COMPANY', cx, cy, 88, -0.5, 0.5, true);
+            
+        } else if (badge.type === 'globe') {
+            // ISO 27001 (Blue ring with globe)
+            ctx.beginPath();
+            ctx.arc(cx, cy, 140, 0, 2 * Math.PI);
+            ctx.lineWidth = 14;
+            ctx.strokeStyle = badge.color;
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(cx, cy, 115, 0, 2 * Math.PI);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = badge.color;
+            ctx.stroke();
+            
+            // Draw Globe lines
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, 113, 0, 2 * Math.PI);
+            ctx.clip();
+            ctx.strokeStyle = badge.color;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, 35, 113, 0, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, 75, 113, 0, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - 113); ctx.lineTo(cx, cy + 113);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx - 113, cy); ctx.lineTo(cx + 113, cy);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx - 113, cy - 40); ctx.lineTo(cx + 113, cy - 40);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx - 113, cy + 40); ctx.lineTo(cx + 113, cy + 40);
+            ctx.stroke();
+            ctx.restore();
+            
+            ctx.fillStyle = badge.color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // ISO text with white outline so it pops over the globe
+            ctx.font = '900 68px "Arial Black", Arial, sans-serif';
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'white';
+            ctx.strokeText('ISO', cx, cy);
+            ctx.fillText('ISO', cx, cy);
+            
+            ctx.font = 'bold 24px Arial, sans-serif';
+            ctx.fillStyle = badge.color;
+            drawTextAlongArc(ctx, 'CERTIFIED', cx, cy, 88, -0.6, 0.6, false);
+            
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = 'white';
+            drawTextAlongArc(ctx, badge.number, cx, cy, 88, -0.4, 0.4, true); // stroke to pop
+            ctx.fillStyle = badge.color;
+            drawTextAlongArc(ctx, badge.number, cx, cy, 88, -0.4, 0.4, true);
+            
+        } else if (badge.type === 'rosette') {
+            // ISO 14001 (Green jagged rosette with banner)
+            ctx.fillStyle = badge.color;
+            drawRosette(ctx, cx, cy, 36, 140, 128);
+            
+            // Inner circle
+            ctx.beginPath();
+            ctx.arc(cx, cy, 110, 0, 2 * Math.PI);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = 'white';
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(cx, cy, 100, 0, 2 * Math.PI);
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.strokeStyle = 'white';
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Back Banner (Dark Green shadow)
+            ctx.fillStyle = DARK_GREEN;
+            ctx.beginPath();
+            ctx.moveTo(10, cy - 10); ctx.lineTo(290, cy - 10);
+            ctx.lineTo(290, cy + 45); ctx.lineTo(10, cy + 45);
+            ctx.fill();
+            
+            // Front Banner (Green)
+            ctx.fillStyle = badge.color;
+            ctx.beginPath();
+            ctx.moveTo(5, cy - 30); ctx.lineTo(295, cy - 30);
+            ctx.lineTo(275, cy); ctx.lineTo(295, cy + 30);
+            ctx.lineTo(5, cy + 30); ctx.lineTo(25, cy);
+            ctx.fill();
+            
+            // Banner border
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'white';
+            ctx.stroke();
+            
+            // Text
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'white';
+            
+            ctx.font = '900 36px "Arial Black", Arial, sans-serif';
+            ctx.fillText('ISO 14001', cx, cy);
+            
+            ctx.font = 'bold 18px Arial, sans-serif';
+            drawTextAlongArc(ctx, 'CERTIFIED', cx, cy, 80, -0.4, 0.4, true);
+        }
+
+        // Download Button
+        const btn = document.createElement('button');
+        btn.innerText = 'Download ' + badge.id + '.png';
+        btn.onclick = () => {
+            const link = document.createElement('a');
+            link.download = badge.id + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
+
+        container.appendChild(canvas);
+        container.appendChild(btn);
+        document.getElementById('badges').appendChild(container);
+    }
+
+    badges.forEach(createBadge);
+</script>
+</body>
+</html>

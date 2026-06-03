@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reloop Signatures Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            background-color: #f0f2f5;
+        }
+        .sidebar {
+            width: 280px;
+            background-color: #0C2B5C;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .sidebar-header {
+            padding: 30px 20px;
+            background-color: #0A2249;
+            text-align: center;
+        }
+        .sidebar-header img {
+            max-width: 150px;
+            margin-bottom: 15px;
+            filter: brightness(0) invert(1);
+        }
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 16px;
+            color: #0B7C3B;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+        }
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+        .nav-item {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 20px 25px;
+            color: #e0e0e0;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+        }
+        .nav-link::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: transparent;
+            margin-right: 15px;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            background-color: rgba(11, 124, 59, 0.2);
+            color: white;
+            padding-left: 32px;
+        }
+        .nav-link.active {
+            background-color: #0B7C3B;
+            color: white;
+        }
+        .nav-link.active::before {
+            background-color: white;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #e9ecef;
+            position: relative;
+        }
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 300px;
+            background: linear-gradient(135deg, #0B7C3B 0%, #0C2B5C 100%);
+            opacity: 0.1;
+            z-index: 0;
+        }
+        .topbar {
+            height: 80px;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 10;
+        }
+        .topbar h1 {
+            margin: 0;
+            font-size: 22px;
+            color: #0C2B5C;
+            font-weight: 700;
+        }
+        .iframe-container {
+            flex-grow: 1;
+            padding: 40px;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+        iframe {
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            border: none;
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <!-- White version of logo via CSS filter -->
+            <img src="https://github.com/learnDataScienceIndia/signature/blob/0fa070974f7c06bd9b8e544b431c8d56c19c57af/t%20logo.png?raw=true" alt="Reloop Logo">
+            <h2>Email Signatures</h2>
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item"><a class="nav-link active" onclick="loadSignature('index.html', this, 'Luke M')">Luke M</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="loadSignature('smit.html', this, 'Smit Chauhan')">Smit Chauhan</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="loadSignature('smeer.html', this, 'Sameer Tejani')">Sameer Tejani</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="loadSignature('raju.html', this, 'Raju Lajwani')">Raju Lajwani</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h1 id="current-name">Luke M's Signature</h1>
+        </div>
+        <div class="iframe-container">
+            <iframe id="sig-frame" src="index.html"></iframe>
+        </div>
+    </div>
+
+    <script>
+        function loadSignature(file, element, name) {
+            const iframe = document.getElementById('sig-frame');
+            
+            // Add a brief fade out effect
+            iframe.style.opacity = '0.5';
+            iframe.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                iframe.src = file;
+                document.getElementById('current-name').textContent = name + "'s Signature";
+                
+                // Fade back in
+                iframe.style.opacity = '1';
+                iframe.style.transform = 'translateY(0)';
+            }, 150);
+            
+            var links = document.getElementsByClassName('nav-link');
+            for (var i = 0; i < links.length; i++) {
+                links[i].classList.remove('active');
+            }
+            element.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>
